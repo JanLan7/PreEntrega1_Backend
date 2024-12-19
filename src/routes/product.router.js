@@ -4,18 +4,15 @@ const router = Router();
 export default router;
 
 //Importamos el productManager: 
-// const ProductManager = require("../managers/product-manager.js");
+
 import ProductManager from "../managers/product-manager.js";
 const manager = new ProductManager("./src/data/productos.json"); 
 
-//Rutas
-router.get("/", (req, res) => {
-    res.send("Hola mundo!"); 
-})
+
 
 //Ruta para listar todos los productos: 
 
-router.get("/products", async (req, res) => {
+router.get("/", async (req, res) => {
     //Me guardo el query limit: 
     let limit = req.query.limit; 
 

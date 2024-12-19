@@ -1,7 +1,7 @@
 import {promises as fs} from "fs";
 
 class CartManager {
-    constructor() {
+    constructor(path) {
         this.carts = [];
         this.path = path;
         this.ultId = 0;
@@ -68,3 +68,5 @@ class CartManager {
 
     }
 }
+
+export default CartManager;
