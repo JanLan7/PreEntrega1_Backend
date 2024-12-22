@@ -1,24 +1,23 @@
+//importaciones varias
 import express from "express";
-const app = express(); 
-const PUERTO = 8080;
-import cartRouter from "./routes/cart.router.js";
-import productRouter from "./routes/product.router.js";
-// const productRouter = require("./routes/product.router.js");
+import productRoutes from "./routes/products.routes.js"
+import cartRoutes from "./routes/carts.routes.js"
 
+//llamada a express
+const app = express();
+
+//Puerto
+const PUERTO = 8080;
 
 //middleware
+
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use("/api/products", productRoutes)
+app.use("/api/carts", cartRoutes)
 
-//rutas
+//listen
 
-app.use("/api/products", productRouter)
-app.use("/api/carts",cartRouter);
-
-
-
-//Listen
-
-app.listen(PUERTO, () => {
+app.listen(PUERTO, ()=>{
     console.log(`Escuchando en el puerto: ${PUERTO}`);
+    
 })
