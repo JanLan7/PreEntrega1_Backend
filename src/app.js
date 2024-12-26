@@ -1,7 +1,7 @@
 //importaciones varias
 import express from "express";
-import productRoutes from "./routes/products.routes.js"
-import cartRoutes from "./routes/carts.routes.js"
+import rutasProductos from "./routes/products.routes.js"
+import rutasCarritos from "./routes/carts.routes.js"
 import { promises as fs } from 'fs';
 
 //llamada a express
@@ -12,8 +12,8 @@ const PUERTO = 8080;
 
 //middleware
 app.use(express.json());
-app.use("/api/products", productRoutes);
-app.use("/api/carts", cartRoutes);
+app.use("/api/products", rutasProductos);
+app.use("/api/carts", rutasCarritos);
 
 // Manejo de errores global
 app.use((err, req, res, next) => {
@@ -22,7 +22,7 @@ app.use((err, req, res, next) => {
 });
 
 // Inicializar archivos JSON si no existen
-const initializeFiles = async () => {
+const inicializarArchivos = async () => {
     try {
         await fs.access('./src/data/products.json');
     } catch {
@@ -36,7 +36,7 @@ const initializeFiles = async () => {
 };
 
 // Inicializar servidor después de verificar archivos
-initializeFiles()
+inicializarArchivos()
     .then(() => {
         app.listen(PUERTO, () => {
             console.log(`Servidor corriendo en puerto: ${PUERTO}`);

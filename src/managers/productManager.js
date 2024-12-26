@@ -1,78 +1,75 @@
 import { promises as fs } from 'fs';
 
 class ProductManager {
-    constructor(filePath) {
-        this.filePath = filePath;
+    constructor(rutaArchivo) {
+        this.rutaArchivo = rutaArchivo;
     }
 
-    async getProducts() {
-        const data = await fs.readFile(this.filePath, 'utf-8');
-        return JSON.parse(data);
+    async obtenerProductos() {
+        const datos = await fs.readFile(this.rutaArchivo, 'utf-8');
+        return JSON.parse(datos);
     }
 
-    async getProductById(id) {
-        const products = await this.getProducts();
-        return products.find(product => product.id === parseInt(id));
+    async obtenerProductoPorId(id) {
+        const productos = await this.obtenerProductos();
+        return productos.find(producto => producto.id === parseInt(id));
     }
 
-    async addProduct(product) {
-        // Validar campos obligatorios
-        const requiredFields = ['title', 'description', 'code', 'price', 'stock', 'category'];
-        for (let field of requiredFields) {
-            if (!product[field]) {
-                console.log(`Campo faltante: ${field}`);
-                return null;
-            }
+    async agregarProducto(producto) {
+        const camposRequeridos = ['titulo', 'descripcion', 'codigo', 'precio', 'stock', 'categoria'];
+        
+        const camposFaltantes = camposRequeridos.filter(campo => !producto[campo]);
+        if (camposFaltantes.length > 0) {
+            console.log(`Campos faltantes: ${camposFaltantes.join(', ')}`);
+            return null;
         }
 
-        // Validar tipos de datos
-        if (typeof product.title !== 'string' || 
-            typeof product.description !== 'string' ||
-            typeof product.code !== 'string' ||
-            typeof product.price !== 'number' || 
-            typeof product.stock !== 'number' ||
-            typeof product.category !== 'string' ||
-            (product.status !== undefined && typeof product.status !== 'boolean') ||
-            (product.thumbnails !== undefined && !Array.isArray(product.thumbnails))) {
+        if (typeof producto.titulo !== 'string' || 
+            typeof producto.descripcion !== 'string' ||
+            typeof producto.codigo !== 'string' ||
+            typeof producto.precio !== 'number' || 
+            typeof producto.stock !== 'number' ||
+            typeof producto.categoria !== 'string' ||
+            (producto.estado !== undefined && typeof producto.estado !== 'boolean') ||
+            (producto.miniaturas !== undefined && !Array.isArray(producto.miniaturas))) {
             console.log('Tipo de datos inválido');
             return null;
         }
 
-        const products = await this.getProducts();
+        const productos = await this.obtenerProductos();
         
-        // Verificar código único
-        if (products.some(p => p.code === product.code)) {
+        if (productos.some(p => p.codigo === producto.codigo)) {
             console.log('Código duplicado');
             return null;
         }
 
-        const newProduct = {
-            id: products.length ? products[products.length - 1].id + 1 : 1,
-            ...product,
-            status: product.status ?? true,
-            thumbnails: product.thumbnails || []
+        const nuevoProducto = {
+            id: productos.length ? productos[productos.length - 1].id + 1 : 1,
+            ...producto,
+            estado: producto.estado ?? true,
+            miniaturas: producto.miniaturas || []
         };
-        products.push(newProduct);
-        await fs.writeFile(this.filePath, JSON.stringify(products, null, 2));
-        return newProduct;
+        productos.push(nuevoProducto);
+        await fs.writeFile(this.rutaArchivo, JSON.stringify(productos, null, 2));
+        return nuevoProducto;
     }
 
-    async updateProduct(id, updates) {
-        const products = await this.getProducts();
-        const index = products.findIndex(product => product.id === parseInt(id));
-        if (index === -1) return null;
+    async actualizarProducto(id, actualizaciones) {
+        const productos = await this.obtenerProductos();
+        const indice = productos.findIndex(producto => producto.id === parseInt(id));
+        if (indice === -1) return null;
 
-        products[index] = { ...products[index], ...updates, id: products[index].id };
-        await fs.writeFile(this.filePath, JSON.stringify(products, null, 2));
-        return products[index];
+        productos[indice] = { ...productos[indice], ...actualizaciones, id: productos[indice].id };
+        await fs.writeFile(this.rutaArchivo, JSON.stringify(productos, null, 2));
+        return productos[indice];
     }
 
-    async deleteProduct(id) {
-        const products = await this.getProducts();
-        const updatedProducts = products.filter(product => product.id !== parseInt(id));
-        if (updatedProducts.length === products.length) return false;
+    async eliminarProducto(id) {
+        const productos = await this.obtenerProductos();
+        const productosActualizados = productos.filter(producto => producto.id !== parseInt(id));
+        if (productosActualizados.length === productos.length) return false;
 
-        await fs.writeFile(this.filePath, JSON.stringify(updatedProducts, null, 2));
+        await fs.writeFile(this.rutaArchivo, JSON.stringify(productosActualizados, null, 2));
         return true;
     }
 }

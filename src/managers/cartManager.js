@@ -1,64 +1,65 @@
 import { promises as fs } from 'fs';
 
 class CartManager {
-    constructor(filePath) {
-        this.filePath = filePath;
+    constructor(rutaArchivo) {
+        this.rutaArchivo = rutaArchivo;
     }
 
-    async getCarts() {
-        const data = await fs.readFile(this.filePath, 'utf-8');
-        return JSON.parse(data);
+    async obtenerCarritos() {
+        const datos = await fs.readFile(this.rutaArchivo, 'utf-8');
+        return JSON.parse(datos);
     }
 
-    async getCartById(id) {
-        const carts = await this.getCarts();
-        return carts.find(cart => cart.id === parseInt(id));
+    async obtenerCarritoPorId(id) {
+        const carritos = await this.obtenerCarritos();
+        return carritos.find(carrito => carrito.id === parseInt(id));
     }
 
-    async createCart() {
-        const carts = await this.getCarts();
-        const newCart = {
-            id: carts.length ? carts[carts.length - 1].id + 1 : 1,
-            products: [],
+    async crearCarrito() {
+        const carritos = await this.obtenerCarritos();
+        const nuevoCarrito = {
+            id: carritos.length ? carritos[carritos.length - 1].id + 1 : 1,
+            productos: [],
         };
-        carts.push(newCart);
-        await fs.writeFile(this.filePath, JSON.stringify(carts, null, 2));
-        return newCart;
+        carritos.push(nuevoCarrito);
+        await fs.writeFile(this.rutaArchivo, JSON.stringify(carritos, null, 2));
+        return nuevoCarrito;
     }
 
-    async addProductToCart(cartId, productId) {
-        if (!Number.isInteger(parseInt(cartId)) || !Number.isInteger(parseInt(productId))) {
+    async agregarProductoAlCarrito(carritoId, productoId) {
+        if (!Number.isInteger(parseInt(carritoId)) || !Number.isInteger(parseInt(productoId))) {
             return null;
         }
-        const carts = await this.getCarts();
-        const cart = carts.find(cart => cart.id === parseInt(cartId));
-        if (!cart) {
+        const carritos = await this.obtenerCarritos();
+        const carrito = carritos.find(carrito => carrito.id === parseInt(carritoId));
+        if (!carrito) {
             console.log('Carrito no encontrado');
             return null;
         }
 
-        // Validar que el producto exista
         try {
-            const productData = await fs.readFile('./src/data/products.json', 'utf-8');
-            const products = JSON.parse(productData);
-            const productExists = products.some(p => p.id === parseInt(productId));
-            if (!productExists) {
+            const datosProducto = await fs.readFile('./src/data/products.json', 'utf-8');
+            const productos = JSON.parse(datosProducto);
+            const productoExiste = productos.some(p => p.id === parseInt(productoId));
+            if (!productoExiste) {
                 console.log('Producto no encontrado');
                 return null;
             }
 
-            const productIndex = cart.products.findIndex(prod => prod.product === parseInt(productId));
-            if (productIndex !== -1) {
-                cart.products[productIndex].quantity += 1;
+            const indiceProducto = carrito.productos.findIndex(prod => prod.producto === parseInt(productoId));
+            if (indiceProducto !== -1) {
+                
+                carrito.productos[indiceProducto].cantidad++;
             } else {
-                cart.products.push({ 
-                    product: parseInt(productId), 
-                    quantity: 1 
+                
+                carrito.productos.push({ 
+                    producto: parseInt(productoId), 
+                    cantidad: 1 
                 });
             }
 
-            await fs.writeFile(this.filePath, JSON.stringify(carts, null, 2));
-            return cart;
+            await fs.writeFile(this.rutaArchivo, JSON.stringify(carritos, null, 2));
+            return carrito;
         } catch (error) {
             console.error('Error al procesar el producto:', error);
             return null;

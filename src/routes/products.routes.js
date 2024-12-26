@@ -3,63 +3,62 @@
 import {Router} from "express";
 import ProductManager from "../managers/productManager.js"
 
-
 //llamamos a Router
-const router = Router();
-const productManager = new ProductManager("./src/data/products.json")
+const ruta = Router();
+const manejadorProductos = new ProductManager("./src/data/products.json")
 
 //router
 
 //get
-router.get("/", async (req, res) => {
-    const limit = parseInt(req.query.limit);
-    const products = await productManager.getProducts();
-    if (limit) {
-        return res.json(products.slice(0, limit));
+ruta.get("/", async (req, res) => {
+    const limite = parseInt(req.query.limit);
+    const productos = await manejadorProductos.obtenerProductos();
+    if (limite) {
+        return res.json(productos.slice(0, limite));
     }
-    res.json(products);
+    res.json(productos);
 });
 
-router.get("/:pid", async (req, res) => {
+ruta.get("/:pid", async (req, res) => {
     if (!Number.isInteger(parseInt(req.params.pid))) {
         return res.status(400).json({ error: "ID inválido" });
     }
-    const product = await productManager.getProductById(req.params.pid);
-    if (!product) return res.status(404).json({ error: "product not found" });
-    res.send(product);
+    const producto = await manejadorProductos.obtenerProductoPorId(req.params.pid);
+    if (!producto) return res.status(404).json({ error: "producto no encontrado" });
+    res.send(producto);
 });
 
 //post
-router.post("/", async (req, res) => {
+ruta.post("/", async (req, res) => {
     try {
-        const newProduct = req.body;
-        const product = await productManager.addProduct(newProduct);
-        if (!product) {
+        const nuevoProducto = req.body;
+        const producto = await manejadorProductos.agregarProducto(nuevoProducto);
+        if (!producto) {
             return res.status(400).json({ 
                 error: "Datos de producto inválidos o código duplicado" 
             });
         }
-        res.status(201).json(product);
+        res.status(201).json(producto);
     } catch (error) {
         res.status(500).json({ error: "Error interno del servidor" });
     }
 });
 
 //put
-router.put("/:pid", async (req, res) => {
-    const updatedProduct = await productManager.updateProduct(req.params.pid, req.body);
-    if (!updatedProduct) return res.status(404).json({ error: "producto no encontrado" });
-    res.json(updatedProduct);
+ruta.put("/:pid", async (req, res) => {
+    const productoActualizado = await manejadorProductos.actualizarProducto(req.params.pid, req.body);
+    if (!productoActualizado) return res.status(404).json({ error: "producto no encontrado" });
+    res.json(productoActualizado);
 });
 
 //delete
-router.delete("/:pid", async (req, res) => {
-    const deleted = await productManager.deleteProduct(req.params.pid);
-    if (!deleted) return res.status(404).json({ error: "producto no encontrado" });
-    res.json({ message: "producto eliminado exitosamente" });
+ruta.delete("/:pid", async (req, res) => {
+    const eliminado = await manejadorProductos.eliminarProducto(req.params.pid);
+    if (!eliminado) return res.status(404).json({ error: "producto no encontrado" });
+    res.json({ mensaje: "producto eliminado exitosamente" });
 });
 
-export default router;
+export default ruta;
 
 
 
