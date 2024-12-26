@@ -12,15 +12,45 @@ class ProductManager {
 
     async getProductById(id) {
         const products = await this.getProducts();
-        return products.find(product => product.id === id);
+        return products.find(product => product.id === parseInt(id));
     }
 
     async addProduct(product) {
+        // Validar campos obligatorios
+        const requiredFields = ['title', 'description', 'code', 'price', 'stock', 'category'];
+        for (let field of requiredFields) {
+            if (!product[field]) {
+                console.log(`Campo faltante: ${field}`);
+                return null;
+            }
+        }
+
+        // Validar tipos de datos
+        if (typeof product.title !== 'string' || 
+            typeof product.description !== 'string' ||
+            typeof product.code !== 'string' ||
+            typeof product.price !== 'number' || 
+            typeof product.stock !== 'number' ||
+            typeof product.category !== 'string' ||
+            (product.status !== undefined && typeof product.status !== 'boolean') ||
+            (product.thumbnails !== undefined && !Array.isArray(product.thumbnails))) {
+            console.log('Tipo de datos inválido');
+            return null;
+        }
+
         const products = await this.getProducts();
+        
+        // Verificar código único
+        if (products.some(p => p.code === product.code)) {
+            console.log('Código duplicado');
+            return null;
+        }
+
         const newProduct = {
             id: products.length ? products[products.length - 1].id + 1 : 1,
             ...product,
             status: product.status ?? true,
+            thumbnails: product.thumbnails || []
         };
         products.push(newProduct);
         await fs.writeFile(this.filePath, JSON.stringify(products, null, 2));
@@ -29,7 +59,7 @@ class ProductManager {
 
     async updateProduct(id, updates) {
         const products = await this.getProducts();
-        const index = products.findIndex(product => product.id === id);
+        const index = products.findIndex(product => product.id === parseInt(id));
         if (index === -1) return null;
 
         products[index] = { ...products[index], ...updates, id: products[index].id };
@@ -39,7 +69,7 @@ class ProductManager {
 
     async deleteProduct(id) {
         const products = await this.getProducts();
-        const updatedProducts = products.filter(product => product.id !== id);
+        const updatedProducts = products.filter(product => product.id !== parseInt(id));
         if (updatedProducts.length === products.length) return false;
 
         await fs.writeFile(this.filePath, JSON.stringify(updatedProducts, null, 2));

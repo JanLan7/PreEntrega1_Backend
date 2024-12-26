@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import CartManager from '../managers/cartManager.mjs';
+import CartManager from '../managers/cartManager.js';
 
 const router = Router();
 const cartManager = new CartManager('./src/data/carts.json');
@@ -16,10 +16,18 @@ router.get('/:cid', async (req, res) => {
 });
 
 router.post('/:cid/product/:pid', async (req, res) => {
-    const { cid, pid } = req.params;
-    const updatedCart = await cartManager.addProductToCart(cid, pid);
-    if (!updatedCart) return res.status(404).json({ error: 'Cart or Product not found' });
-    res.json(updatedCart);
+    try {
+        const { cid, pid } = req.params;
+        const updatedCart = await cartManager.addProductToCart(cid, pid);
+        if (!updatedCart) {
+            return res.status(404).json({ 
+                error: 'Carrito no encontrado o producto inválido' 
+            });
+        }
+        res.json(updatedCart);
+    } catch (error) {
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
 });
 
 export default router;
